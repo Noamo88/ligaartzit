@@ -138,7 +138,7 @@ function render(){
     : DATA[type].filter(r => r.cat===cat).sort((a,b)=>a.rank-b.rank||a.name.localeCompare(b.name,'he'));
   const rows = q ? all.filter(r => r.name.includes(q) || (r.club||'').includes(q)) : all;
   $('list').style.setProperty('--k',k); $('head').style.setProperty('--k',k);
-  $('head').innerHTML = `<span>דירוג</span><span>מתחרה</span><span>סה"כ ניקוד</span>` +
+  $('head').innerHTML = `<span>דירוג</span><span>מתחרה</span><span>ניקוד</span>` +
     Array.from({length:k},(_,i)=>`<span>תחרות ${i+1}</span>`).join('');
   $('meta').innerHTML = (favOnly ? `<span><b>${all.length}</b> מתחרים מסומנים בכל הקטגוריות</span>` : `<span><b>${all.length}</b> מתחרים בקטגוריה</span>`) + `<span>נספרות <b>${k}</b> התוצאות הטובות ביותר</span>`;
   $('list').innerHTML = rows.length ? rows.map(r => {
@@ -150,7 +150,7 @@ function render(){
     const p = r.rank<=3 ? ` p${r.rank}` : '';
     return `<li class="r"><div class="pos${p}">${r.rank}</div>
       <div class="who"><button class="star" data-id="${r.id}" aria-pressed="${favs.has(r.id)}" aria-label="סימון מתחרה">★</button><b title="${esc(r.name)}">${esc(r.name)}</b><div class="club" title="${esc(r.club)}">${esc(r.club)}${favOnly?' · '+esc(r.cat):''}</div></div>
-      <div class="tot">${fmt(r.total)}</div><div class="rs">${slots}</div></li>`;
+      <div class="tot"><small>סה"כ</small>${fmt(r.total)}</div><div class="rs">${slots}</div></li>`;
   }).join('') : `<li class="empty">${ST[type]==='loading' ? 'טוען נתונים...' : ST[type]==='error' ? 'לא ניתן לטעון את הנתונים כרגע. רענן את הדף. ('+esc(ERR[type]||'')+')' : !DATA[type].length ? 'עדיין אין מתחרים עם ניקוד בליגה הזו.' : favOnly&&!q ? 'עדיין לא סימנת מתחרים. לחץ על הכוכב ליד שם מתחרה כדי להוסיף אותו.' : 'לא נמצא מתחרה בשם הזה.'}</li>`;
   $('note').textContent = `ליגת ${NAME[type]}: הניקוד המצטבר הוא סכום ${k} התוצאות הטובות ביותר של המתחרה. תחרויות נוספות לא מוצגות.`;
 }
