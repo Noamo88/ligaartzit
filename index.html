@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ניקוד מצטבר ליגה ארצית</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&display=swap">
+<style>
+/* Layout: one column, sticky controls on top, ranked rows with the counted results beside each athlete */
+:root{
+  --bg:#f3f5f6; --surface:#ffffff; --fg:#14232b; --muted:#5d6e77; --line:#dbe2e6;
+  --accent:#0b6e8a; --accent-soft:#dff0f5; --accent-fg:#ffffff; --chip:#eef2f4;
+  --gold:#b7791f; --silver:#6b7a83; --bronze:#9a5b34;
+  --font:'Heebo',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1a20; --surface:#17252d; --fg:#e8eff2; --muted:#93a5af; --line:#26373f;
+  --accent:#4cc3e0; --accent-soft:#17323c; --accent-fg:#06222b; --chip:#1e303a;
+  --gold:#e3b04b; --silver:#a9b8c0; --bronze:#d08a5f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1a20; --surface:#17252d; --fg:#e8eff2; --muted:#93a5af; --line:#26373f;
+  --accent:#4cc3e0; --accent-soft:#17323c; --accent-fg:#06222b; --chip:#1e303a;
+  --gold:#e3b04b; --silver:#a9b8c0; --bronze:#d08a5f; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.45;
+  padding-block:0 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1120px;margin:0 auto}
+header{padding-top:28px}
+h1{font-size:clamp(26px,5vw,38px);font-weight:800;letter-spacing:-.01em;margin:0;text-wrap:balance}
+.sub{color:var(--muted);margin:6px 0 0}
+.controls{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:16px 0 12px;margin-top:8px;display:grid;gap:12px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.seg{display:inline-grid;grid-template-columns:1fr 1fr;background:var(--chip);border-radius:10px;padding:4px;gap:4px;width:min(100%,320px)}
+.seg button{font:inherit;font-weight:700;border:0;background:transparent;color:var(--muted);padding:9px 14px;border-radius:7px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg)}
+.row2{display:flex;gap:10px;flex-wrap:wrap}
+select,input[type=search]{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:9px 12px;min-width:0}
+select{flex:1 1 220px}
+input[type=search]{flex:1 1 180px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.meta{color:var(--muted);font-size:13.5px;display:flex;gap:6px 16px;flex-wrap:wrap;margin:4px 0 10px}
+.meta b{color:var(--fg);font-weight:700}
+.head,.r{display:grid;grid-template-columns:48px minmax(0,1.6fr) 72px repeat(var(--k),minmax(0,1fr));gap:10px;align-items:center;padding:11px 14px}
+.head{color:var(--muted);font-size:12.5px;font-weight:500;padding-block:6px}
+.list{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.r{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.pos{font-weight:800;font-size:20px;font-variant-numeric:tabular-nums}
+.p1{color:var(--gold)}.p2{color:var(--silver)}.p3{color:var(--bronze)}
+.who{min-width:0}
+.club{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who b{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.top{display:flex;align-items:center;gap:6px;min-width:0}
+.star{flex:none;border:0;background:transparent;color:var(--line);font-size:19px;line-height:1;padding:2px;cursor:pointer;border-radius:6px}
+.star[aria-pressed="true"]{color:var(--gold)}
+.star:hover{color:var(--gold)}
+.favbtn{font:inherit;font-weight:700;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:9px;padding:9px 14px;cursor:pointer;white-space:nowrap}
+.favbtn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+select:disabled{opacity:.5}
+.club{color:var(--muted);font-size:13.5px;min-width:0}
+.tot{font-weight:800;font-size:19px;font-variant-numeric:tabular-nums;color:var(--accent)}
+.tot small{display:block;font-size:11.5px;font-weight:400;color:var(--muted)}
+.res{background:var(--chip);border-radius:8px;padding:6px 9px;min-width:0;font-size:13px}
+.res i{font-style:normal;display:block;color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.res b{font-variant-numeric:tabular-nums;font-size:15px}
+.res.none{background:transparent;border:1px dashed var(--line);color:var(--muted)}
+.empty{padding:40px 16px;text-align:center;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.note{color:var(--muted);font-size:13px;margin-top:18px}
+.rs{display:contents}
+.head span:not(:nth-child(2)),.pos,.tot,.res{text-align:center}
+@media(max-width:720px){
+  .head{display:none}
+  .r{grid-template-columns:40px minmax(0,1fr) auto;row-gap:6px}
+  .pos{grid-column:1}
+  .who{grid-column:2}
+  .tot{grid-column:3}
+  .rs{grid-column:1 / -1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:4px}
+}
+@media(prefers-reduced-motion:no-preference){.r{transition:border-color .15s}.r:hover{border-color:var(--accent)}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>ניקוד מצטבר - ליגה ארצית</h1>
+  </header>
+  <div class="controls">
+    <div class="seg" role="group" aria-label="סוג ליגה">
+      <button id="b-boulder" aria-pressed="true">בולדר</button>
+      <button id="b-lead" aria-pressed="false">הובלה</button>
+    </div>
+    <div class="row2">
+      <select id="cat" aria-label="קטגוריה"></select>
+      <button id="fav" class="favbtn" aria-pressed="false">★ מסומנים בלבד</button>
+      <input id="q" type="search" placeholder="חיפוש מתחרה" aria-label="חיפוש מתחרה">
+    </div>
+  </div>
+  <p class="meta" id="status" hidden></p>
+  <div class="meta" id="meta"></div>
+  <div class="head" id="head"></div>
+  <ol class="list" id="list"></ol>
+  <p class="note" id="note"></p>
+</div>
+
+
+<script>
+document.documentElement.setAttribute("dir","rtl");document.documentElement.setAttribute("lang","he");
+let DATA = {boulder:[], lead:[]};
+const K = {boulder:4, lead:3};
+const NAME = {boulder:'בולדר', lead:'הובלה'};
+const CATS = ['U11','U13','U15','U17','U19','U21','בוגרים','בוגרות'];
+let type = 'boulder', cat = null, favOnly = false;
+let favs = new Set();
+try{ favs = new Set(JSON.parse(localStorage.getItem('favs')||'[]')); }catch(e){}
+const saveFavs = () => { try{ localStorage.setItem('favs', JSON.stringify([...favs])); }catch(e){} };
+const $ = id => document.getElementById(id);
+const fmt = n => Number.isInteger(n) ? String(n) : (Math.round(n*10)/10).toLocaleString('he-IL');
+function catOrder(c){
+  const i = CATS.findIndex(p => c.startsWith(p));
+  return (i<0?99:i)*2 + (c.includes('בנות')||c==='בוגרות'?1:0);
+}
+function cats(){
+  const m = {};
+  DATA[type].forEach(r => m[r.cat] = (m[r.cat]||0)+1);
+  return Object.entries(m).sort((a,b)=>catOrder(a[0])-catOrder(b[0])||a[0].localeCompare(b[0],'he'));
+}
+function fillCats(){
+  const list = cats();
+  if(!list.length){cat=null;$('cat').innerHTML='';return;}
+  if(!list.find(x=>x[0]===cat)) cat = list.slice().sort((a,b)=>b[1]-a[1])[0][0];
+  $('cat').innerHTML = list.map(([c,n]) => `<option value="${c}"${c===cat?' selected':''}>${c} (${n})</option>`).join('');
+}
+function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function render(){
+  const k = K[type], q = $('q').value.trim();
+  const all = favOnly
+    ? DATA[type].filter(r => favs.has(r.id)).sort((a,b)=>catOrder(a.cat)-catOrder(b.cat)||a.rank-b.rank)
+    : DATA[type].filter(r => r.cat===cat).sort((a,b)=>a.rank-b.rank||a.name.localeCompare(b.name,'he'));
+  const rows = q ? all.filter(r => r.name.includes(q) || (r.club||'').includes(q)) : all;
+  $('list').style.setProperty('--k',k); $('head').style.setProperty('--k',k);
+  $('head').innerHTML = `<span>דירוג</span><span>מתחרה</span><span>ניקוד</span>` +
+    Array.from({length:k},(_,i)=>`<span>תחרות ${i+1}</span>`).join('');
+  $('meta').innerHTML = (favOnly ? `<span><b>${all.length}</b> מתחרים מסומנים בכל הקטגוריות</span>` : `<span><b>${all.length}</b> מתחרים בקטגוריה</span>`) + `<span>נספרות <b>${k}</b> התוצאות הטובות ביותר</span>`;
+  $('list').innerHTML = rows.length ? rows.map(r => {
+    const slots = Array.from({length:k},(_,i)=>{
+      const d = r.det[i];
+      return d ? `<div class="res"><i title="${esc(d[0])}">${esc(d[0])}</i><b>${fmt(d[1])}</b></div>`
+               : `<div class="res none"><i>—</i></div>`;
+    }).join('');
+    const p = r.rank<=3 ? ` p${r.rank}` : '';
+    return `<li class="r"><div class="pos${p}">${r.rank}</div>
+      <div class="who"><div class="top"><button class="star" data-id="${r.id}" aria-pressed="${favs.has(r.id)}" aria-label="סימון מתחרה">★</button><b title="${esc(r.name)}">${esc(r.name)}</b></div><div class="club" title="${esc(r.club)}">${esc(r.club)}${favOnly?' · '+esc(r.cat):''}</div></div>
+      <div class="tot">${fmt(r.total)}<small>סה"כ</small></div><div class="rs">${slots}</div></li>`;
+  }).join('') : `<li class="empty">${favOnly&&!q ? 'עדיין לא סימנת מתחרים. לחץ על הכוכב ליד שם מתחרה כדי להוסיף אותו.' : 'לא נמצא מתחרה בשם הזה.'}</li>`;
+  $('note').textContent = `ליגת ${NAME[type]}: הניקוד המצטבר הוא סכום ${k} התוצאות הטובות ביותר של המתחרה. תחרויות נוספות לא מוצגות.`;
+}
+function setType(t){
+  type=t;
+  ['boulder','lead'].forEach(x=>$('b-'+x).setAttribute('aria-pressed',x===t));
+  fillCats(); render();
+}
+$('b-boulder').onclick=()=>$('b-lead').onclick=()=>setType('lead');
+$('cat').onchange=e=>{cat=e.target.value;render()};
+$('q').oninput=render;
+$('fav').onclick=()=>{favOnly=!favOnly;$('fav').setAttribute('aria-pressed',favOnly);$('cat').disabled=favOnly;render()};
+$('list').addEventListener('click',e=>{
+  const b=e.target.closest('.star'); if(!b) return;
+  const id=Number(b.dataset.id);
+  favs.has(id)?favs.delete(id):favs.add(id); saveFavs();
+  if(favOnly) render(); else b.setAttribute('aria-pressed',favs.has(id));
+});
+
+const URLS = {
+  boulder: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQUStnbf1_ODv8oLUjTQUEA616Uw-RP1bLdj9r6I-5n0qc-TqpyIF9bdQd1dCImH5GpkjL5eKU0NbIa/pub?gid=1628112734&single=true&output=csv',
+  lead:    'https://docs.google.com/spreadsheets/d/e/2PACX-1vQUStnbf1_ODv8oLUjTQUEA616Uw-RP1bLdj9r6I-5n0qc-TqpyIF9bdQd1dCImH5GpkjL5eKU0NbIa/pub?gid=615586315&single=true&output=csv'
+};
+function parseCSV(text){
+  const out=[]; let row=[], cur='', q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){
+      if(c==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=c;
+    } else if(c==='"') q=true;
+    else if(c===','){row.push(cur);cur='';}
+    else if(c==='\n'){row.push(cur);out.push(row);row=[];cur='';}
+    else if(c!=='\r') cur+=c;
+  }
+  if(cur!==''||row.length){row.push(cur);out.push(row);}
+  return out;
+}
+const num = s => { const v=parseFloat(String(s??'').replace(/,/g,'').trim()); return isNaN(v)?null:v; };
+function toRows(grid){
+  const h = grid.findIndex(r => (r[0]||'').trim()==='מזהה');
+  if(h<0) throw new Error('header');
+  const H = grid[h].map(x=>(x||'').trim());
+  const col = n => H.indexOf(n);
+  const cId=col('מזהה'), cName=col('שם'), cCat=col('קטגוריה'), cClub=col('מועדון'),
+        cN=col("מס' תחרויות בליגה"), cTot=col('סה"כ ניקוד'), cRank=col('דירוג בקטגוריה');
+  const slots=[]; for(let i=1;i<=6;i++){ const a=col('תחרות '+i), b=col('ניקוד '+i); if(a>=0&&b>=0) slots.push([a,b]); }
+  const res=[];
+  for(let i=h+1;i<grid.length;i++){
+    const r=grid[i]; const id=num(r[cId]), total=num(r[cTot]), rank=num(r[cRank]);
+    if(id===null||total===null||rank===null) continue;
+    const det=[]; slots.forEach(([a,b])=>{ const nm=(r[a]||'').trim(), p=num(r[b]); if(nm&&p!==null) det.push([nm,p]); });
+    res.push({id, name:(r[cName]||'').trim(), cat:(r[cCat]||'').trim(), club:(r[cClub]||'').trim(), n:num(r[cN])||0, total, rank, det});
+  }
+  return res;
+}
+async function load(){
+  $('status').hidden=false; $('status').textContent='טוען נתונים...';
+  try{
+    const [b,l]=await Promise.all(['boulder','lead'].map(async k=>{
+      const r=await fetch(URLS[k],{cache:'no-store'}); if(!r.ok) throw new Error(k);
+      return toRows(parseCSV(await r.text()));
+    }));
+    DATA={boulder:b,lead:l};
+    $('status').hidden=true;
+    if(!DATA[type].length){ $('status').hidden=false; $('status').textContent='עדיין אין מתחרים עם ניקוד.'; }
+    setType(type);
+  }catch(e){
+    $('status').hidden=false;
+    $('status').innerHTML='לא ניתן לטעון את הנתונים כרגע. <button class="favbtn" id="retry">נסו שוב</button>';
+    $('retry').onclick=load;
+  }
+}
+load();
+</script>
+</body>
+</html>
