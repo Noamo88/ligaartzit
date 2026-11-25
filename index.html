@@ -159,7 +159,8 @@ function setType(t){
   ['boulder','lead'].forEach(x=>$('b-'+x).setAttribute('aria-pressed',x===t));
   fillCats(); render();
 }
-$('b-boulder').onclick=()=>$('b-lead').onclick=()=>setType('lead');
+$('b-boulder').onclick=()=>setType('boulder');
+$('b-lead').onclick=()=>setType('lead');
 $('cat').onchange=e=>{cat=e.target.value;render()};
 $('q').oninput=render;
 $('fav').onclick=()=>{favOnly=!favOnly;$('fav').setAttribute('aria-pressed',favOnly);$('cat').disabled=favOnly;render()};
