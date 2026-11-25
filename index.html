@@ -41,15 +41,15 @@ input[type=search]{flex:1 1 180px}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .meta{color:var(--muted);font-size:13.5px;display:flex;gap:6px 16px;flex-wrap:wrap;margin:4px 0 10px}
 .meta b{color:var(--fg);font-weight:700}
-.head,.r{display:grid;grid-template-columns:48px minmax(0,1.6fr) 72px repeat(var(--k),minmax(0,1fr));gap:10px;align-items:center;padding:11px 14px}
+.head,.r{display:grid;grid-template-columns:48px minmax(0,1.6fr) 96px repeat(var(--k),minmax(0,1fr));gap:10px;align-items:center;padding:11px 14px}
 .head{color:var(--muted);font-size:12.5px;font-weight:500;padding-block:6px}
 .list{display:grid;gap:6px;margin:0;padding:0;list-style:none}
 .r{background:var(--surface);border:1px solid var(--line);border-radius:10px}
 .pos{font-weight:800;font-size:20px;font-variant-numeric:tabular-nums}
 .p1{color:var(--gold)}.p2{color:var(--silver)}.p3{color:var(--bronze)}
-.who{min-width:0}
+.who{min-width:0;display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:6px;align-items:center}
 .club{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.who b{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.who b{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .top{display:flex;align-items:center;gap:6px;min-width:0}
 .star{flex:none;border:0;background:transparent;color:var(--line);font-size:19px;line-height:1;padding:2px;cursor:pointer;border-radius:6px}
 .star[aria-pressed="true"]{color:var(--gold)}
@@ -57,7 +57,7 @@ input[type=search]{flex:1 1 180px}
 .favbtn{font:inherit;font-weight:700;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:9px;padding:9px 14px;cursor:pointer;white-space:nowrap}
 .favbtn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
 select:disabled{opacity:.5}
-.club{color:var(--muted);font-size:13.5px;min-width:0}
+.club{color:var(--muted);font-size:13.5px;min-width:0;grid-column:2}
 .tot{font-weight:800;font-size:19px;font-variant-numeric:tabular-nums;color:var(--accent)}
 .tot small{display:block;font-size:11.5px;font-weight:400;color:var(--muted)}
 .res{background:var(--chip);border-radius:8px;padding:6px 9px;min-width:0;font-size:13px}
@@ -138,7 +138,7 @@ function render(){
     : DATA[type].filter(r => r.cat===cat).sort((a,b)=>a.rank-b.rank||a.name.localeCompare(b.name,'he'));
   const rows = q ? all.filter(r => r.name.includes(q) || (r.club||'').includes(q)) : all;
   $('list').style.setProperty('--k',k); $('head').style.setProperty('--k',k);
-  $('head').innerHTML = `<span>דירוג</span><span>מתחרה</span><span>ניקוד</span>` +
+  $('head').innerHTML = `<span>דירוג</span><span>מתחרה</span><span>סה"כ ניקוד</span>` +
     Array.from({length:k},(_,i)=>`<span>תחרות ${i+1}</span>`).join('');
   $('meta').innerHTML = (favOnly ? `<span><b>${all.length}</b> מתחרים מסומנים בכל הקטגוריות</span>` : `<span><b>${all.length}</b> מתחרים בקטגוריה</span>`) + `<span>נספרות <b>${k}</b> התוצאות הטובות ביותר</span>`;
   $('list').innerHTML = rows.length ? rows.map(r => {
@@ -149,8 +149,8 @@ function render(){
     }).join('');
     const p = r.rank<=3 ? ` p${r.rank}` : '';
     return `<li class="r"><div class="pos${p}">${r.rank}</div>
-      <div class="who"><div class="top"><button class="star" data-id="${r.id}" aria-pressed="${favs.has(r.id)}" aria-label="סימון מתחרה">★</button><b title="${esc(r.name)}">${esc(r.name)}</b></div><div class="club" title="${esc(r.club)}">${esc(r.club)}${favOnly?' · '+esc(r.cat):''}</div></div>
-      <div class="tot">${fmt(r.total)}<small>סה"כ</small></div><div class="rs">${slots}</div></li>`;
+      <div class="who"><button class="star" data-id="${r.id}" aria-pressed="${favs.has(r.id)}" aria-label="סימון מתחרה">★</button><b title="${esc(r.name)}">${esc(r.name)}</b><div class="club" title="${esc(r.club)}">${esc(r.club)}${favOnly?' · '+esc(r.cat):''}</div></div>
+      <div class="tot">${fmt(r.total)}</div><div class="rs">${slots}</div></li>`;
   }).join('') : `<li class="empty">${ST[type]==='loading' ? 'טוען נתונים...' : ST[type]==='error' ? 'לא ניתן לטעון את הנתונים כרגע. רענן את הדף. ('+esc(ERR[type]||'')+')' : !DATA[type].length ? 'עדיין אין מתחרים עם ניקוד בליגה הזו.' : favOnly&&!q ? 'עדיין לא סימנת מתחרים. לחץ על הכוכב ליד שם מתחרה כדי להוסיף אותו.' : 'לא נמצא מתחרה בשם הזה.'}</li>`;
   $('note').textContent = `ליגת ${NAME[type]}: הניקוד המצטבר הוא סכום ${k} התוצאות הטובות ביותר של המתחרה. תחרויות נוספות לא מוצגות.`;
 }
